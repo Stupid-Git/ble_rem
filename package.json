@@ -1,0 +1,24 @@
+{
+  "name": "ble_rem",
+  "version": "1.0.0",
+  "description": "Bluetooth Remote Control For tuds",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Stupid-Git/ble_rem.git"
+  },
+  "author": "Karel Seeuwen",
+  "license": "ISC",
+  "dependencies": {
+    "socket.io": "*",
+    "express": "*",
+    "noble-device": "*"
+  },
+  "bugs": {
+    "url": "https://github.com/Stupid-Git/ble_rem/issues"
+  },
+  "homepage": "https://github.com/Stupid-Git/ble_rem#readme"
+}
