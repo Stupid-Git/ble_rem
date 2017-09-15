@@ -1,0 +1,264 @@
+<!--
+-->
+
+<html>
+<head>
+	<title>IO Chat</title>
+	<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css" />
+	<script src="http://code.jquery.com/jquery-latest.min.js"></script>
+	<script src="/socket.io/socket.io.js"></script>
+	<style>
+		body{
+			margin-top:30px;
+		}
+
+		#messageArea{
+			display:none;
+		}
+		#bleArea{
+			display:none;
+		}
+	</style>
+</head>
+<body>
+    <h5>"Found here https://www.youtube.com/watch?v=tHbCkikFfDE"</h5>
+    <ul>
+        <li>
+            <a href="https://www.youtube.com/watch?v=tHbCkikFfDE">YouTube</a>
+        </li>
+        <li>
+            <a target="_blank" href="https://www.youtube.com/watch?v=tHbCkikFfDE">YouTube</a>
+        </li>
+    </ul>
+
+
+    <div class="container">
+		<div id="userFormArea" class="row">
+			<div class="col-md-12">
+				<form id="userForm">
+					<div class="form-group">
+						<label>Enter Username</label>
+						<textarea class="form-control" id="username"></textarea>
+						<br />
+						<input type="submit" class="btn btn-primary" value="Login" />
+					</div>
+				</form>
+			</div>
+		</div>
+
+
+
+		<div id="messageArea" class="row">
+			<div class="col-md-4">
+				<div class="well">
+					<h3>Online Users</h3>
+					<u1 class="list-group" id="users"></u1>
+				
+				</div>
+			</div>
+
+			<div class="col-md-4">
+				<div class="chat" id="chat"> </div>
+				<form id="messageForm">
+					<div class="form-group">
+						<label>Enter Message</label>
+						<textarea class="form-control" id="message"></textarea>
+						<br />
+						<input type="submit" class="btn btn-primary" value="Send Message" />
+					</div>
+				</form>
+			</div>
+		</div>
+
+
+		<div id="bleArea" class="row">
+			<div class="col-md-4">
+				<div class="well">
+					<h3>Ble List Group</h3>
+					<u1 class="list-group" id="bleusers"></u1>
+				
+				</div>
+			</div>
+
+			<div class="col-md-4">
+				<div class="chat" id="blechat"> </div>
+				<form id="blemessageForm">
+					<div class="form-group">
+						<label>Enter Message</label>
+						<textarea class="form-control" id="blemessage"></textarea>
+
+						<br />
+						<input type="submit" class="btn btn-primary" value="Send bleMessage" 
+						/>
+<!--
+						<br />						
+						<input type="submit" class="btn btn-primary" value="Send bleMessage2" />
+-->
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+
+<!-- -->
+	<script>
+	    var test = function() {
+	        alert('Button Clicked');
+	        event.stopPropagation();
+	    };
+	</script>
+    <div  onclick="alert('div clicked')" >
+        <input 	
+               	type="button"
+		        onclick="test()"
+
+		       	name="click-form"
+        		id="click-btn"
+        		value="Please click" />
+    </div>
+<!-- -->
+
+<!-- -->
+    <input type="button" name="submit-form"
+        id="submit-btn"  value="Please submit" />
+<!-- -->
+
+<!-- -->
+    </br>
+    <input type="button"
+        id="connect-btn"  value="Connect to BLE device" />
+    <p id="connect-text">[...]</p>
+<!-- -->
+    </br>
+    <input type="button"
+        id="send_pkt1-btn"  value="Send 0x01 packet" />
+    <p id="send_pkt1-text">[...]</p>
+<!-- -->
+    </br>
+    <p id="rxBlePkt-text">[...]</p>
+
+
+	<script>
+		$(function(){
+			var socket = io.connect();
+
+
+			var el_submitBtn = document.getElementById("submit-btn");
+			el_submitBtn.onclick = function() {
+				alert('el_submitBtn clicked');
+			};
+
+			//id="connect-btn"  value="Connect to BLE device" />
+			var el_connectBtn = document.getElementById("connect-btn");
+			el_connectBtn.onclick = function() {
+				//alert('el_connectBtn clicked');
+				document.getElementById("connect-text").innerHTML = "YOU CLICKED ME!";
+				//'ec7c1580b564'
+				socket.emit('connectBle:web', { id : 'ec7c1580b564'} );
+			};
+			// id="send_pkt1-btn"  value="Send 0x01 packet" />
+			var el_send_pkt1Btn = document.getElementById("send_pkt1-btn");
+			el_send_pkt1Btn.onclick = function() {
+				//alert('el_send_pkt1Btn clicked');
+				socket.emit('sendPktBle:web', { pkt : [0x01, 0x9e] } );
+				document.getElementById("send_pkt1-text").innerHTML = "YOU CLICKED ME!";
+			};
+
+
+			socket.on('recvPktBle:web', function(data) {
+			    document.getElementById('rxBlePkt-text').innerText = data.pkt.toString(16);
+			});
+
+
+
+			var $userFormArea = $('#userFormArea');
+			var $userForm = $('#userForm');
+			var $username = $('#username');
+
+			$userForm.submit(function(e){
+				e.preventDefault();
+				socket.emit('new user', $username.val(), function(data) {
+					if(data){
+						$userFormArea.hide();
+						$messageArea.show();
+						$bleArea.show();
+					}
+				}); 
+				$username.val('');
+			});
+
+			socket.on('get users', function(data){
+				var html = '';
+				for(i=0; i<data.length;i++){
+					html += '<li class="list-group-item">' + data[i] + '</li>';
+				}
+				$users.html(html);
+			});
+
+
+
+
+
+
+			var $messageArea = $('#messageArea');
+			var $users = $('#users');
+			var $chat = $('#chat');
+			var $messageForm = $('#messageForm');
+			var $message = $('#message');
+
+
+			$messageForm.submit(function(e){
+				e.preventDefault();
+				console.log('submitted');
+				socket.emit('send message', $message.val());
+				$message.val('');
+			});
+
+			socket.on('new message', function(data)			{
+				$chat.append('<div class="well"><strong>'+data.user+'</strong>: ' + data.msg + '</div>');
+			});
+
+
+			var $bleArea = $('#bleArea');
+			var $bleusers = $('#bleusers');
+			var $blechat = $('#blechat');
+			var $blemessageForm = $('#blemessageForm');
+			var $blemessage = $('#blemessage');
+
+			$blemessageForm.submit(function(e){
+				e.preventDefault();
+				console.log('submitted');
+				socket.emit('fromW-ping', $blemessage.val());
+				$blemessage.val('');
+			});
+
+			//Bogus on the same message as for chat: add to the blechat
+			var Alltext = '';
+			socket.on('toW-pong', function(data){
+
+				//$blechat.append('<div class="well"><strong>'+data.user+'</strong>: ' + data.msg + '</div>');
+
+				Alltext += '<div class="well"><strong>'+data.user+'</strong>: ' + data.msg + '</div>';
+
+				console.log('toW-pong' + Alltext);
+
+				$blemessage.value = Alltext;
+
+			});
+
+
+
+
+
+		});
+
+	</script>
+
+
+
+ </body>
+ </html>
+
+<!--
+-->
+
