@@ -148,26 +148,72 @@
 				alert('el_submitBtn clicked');
 			};
 
+			//====================================================================
+			// CONNECT BLUETOOTH LE
+			//====================================================================
+			var CONNECT_WEB          = 'connect:web';           // Down
+			var DISCONNECT_WEB       = 'disconnect:web';        // Down
+			var CONNECTIONSTATUS_WEB = 'connectionStatus:web';  // Up
+
+			var bleConnectionStatus = false;
 			//id="connect-btn"  value="Connect to BLE device" />
 			var el_connectBtn = document.getElementById("connect-btn");
 			el_connectBtn.onclick = function() {
-				//alert('el_connectBtn clicked');
-				document.getElementById("connect-text").innerHTML = "YOU CLICKED ME!";
-				//'ec7c1580b564'
-				socket.emit('connectBle:web', { id : 'ec7c1580b564'} );
+				if(bleConnectionStatus === true) {
+					document.getElementById("connect-text").innerHTML = "Disconnecting From BLE ....";
+					//var data = { id : 'ec7c1580b564'};
+					var data = 'ec7c1580b564';
+					socket.emit(DISCONNECT_WEB, data);
+				} else {
+					document.getElementById("connect-text").innerHTML = "Connecting To BLE ....";
+					//var data = { id : 'ec7c1580b564'};
+					var data = 'ec7c1580b564';
+					socket.emit(CONNECT_WEB, data);
+				}
 			};
+			socket.on(CONNECTIONSTATUS_WEB, function(idAndStatus){	// Up
+				var status = idAndStatus.status;
+				bleConnectionStatus = status;
+				if(bleConnectionStatus === true) {
+					document.getElementById("connect-text").innerHTML = "Connected !";
+				} else {
+					document.getElementById("connect-text").innerHTML = "Disconnected !";
+				}
+			})
+
+
+			//====================================================================
+			// SEND A PACKET TO BLUETOOTH LE
+			//====================================================================
+			var DNPKT_WEB            = 'dnPkt:web';             // Down
+			var DNPKTSENTCFM_WEB     = 'dnPktSentCfm:web';      // Up
+			var UPPKT_WEB            = 'upPkt:web';             // Up
+
 			// id="send_pkt1-btn"  value="Send 0x01 packet" />
 			var el_send_pkt1Btn = document.getElementById("send_pkt1-btn");
 			el_send_pkt1Btn.onclick = function() {
-				//alert('el_send_pkt1Btn clicked');
-				socket.emit('sendPktBle:web', { pkt : [0x01, 0x9e] } );
-				document.getElementById("send_pkt1-text").innerHTML = "YOU CLICKED ME!";
+			    var _pkt = [0x01, 0x9e,0x00, 0x00,0x00 ,0xce,0x94];
+			    var idAndPkt = { id : 'ec7c1580b564', pkt : _pkt };
+				socket.emit(DNPKT_WEB, idAndPkt);
+				document.getElementById("send_pkt1-text").innerHTML = "Sending ...";
 			};
-
-
-			socket.on('recvPktBle:web', function(data) {
-			    document.getElementById('rxBlePkt-text').innerText = data.pkt.toString(16);
+			socket.on(DNPKTSENTCFM_WEB, function(data) {
+			    document.getElementById('rxBlePkt-text').innerText = 'DNPKTSENTCFM_WEB';
 			});
+			socket.on(UPPKT_WEB, function(idAndPkt) {
+				var id = idAndPkt.id;
+				var pkt = idAndPkt.pkt;
+				console.log('pkt.length = ' + pkt.length);
+				console.log('pkt[0] = ' + pkt[0].toString(16) );
+
+			    document.getElementById('rxBlePkt-text').innerText = id + ': ' + pkt[0].toString(16) + ' ' + pkt[1].toString(16);
+			});
+
+
+
+
+
+
 
 
 
@@ -246,9 +292,41 @@
 
 			});
 
+/*
+
+var STARTSCAN_WEB        = 'startScan:web';         // Down
+var STOPSCAN_WEB         = 'stopScan:web';          // Down
+var SCANDATA_WEB         = 'scanData:web';          // Up
+var SCANSTOPPED_WEB      = 'scanStoppped:web';      // Up
+
+
+	// message passing ----------------------------------------------------
+	socket.on('XXXSTARTSCAN_WEB', function(data){		// Down
+		socket.emit('STARTSCAN_WEB', data);
+	})
+	socket.on('XXXSTOPSCAN_WEB', function(data){		// Down
+		socket.emit('STOPSCAN_WEB', data);
+	})
+	socket.on('SCANDATA_WEB', function(data){		// Up
+		socket.emit('XXXSCANDATA_WEB', data);
+	})
+	socket.on('SCANSTOPPED_WEB', function(data){	// Up
+		socket.emit('XXXSCANSTOPPED_WEB', data);
+	})
 
 
 
+	socket.on('dsadasdasdNPKT_WEB', function(data){			// Down
+		socket.emit('DNPKT_WEB', data);
+	})
+	socket.on('DNPKTSENTCFM_WEB', function(data){	// Up
+		socket.emit('dfgdfgdfNPKTSENTCFM_WEB', data);
+	})
+	socket.on('UPPKT_WEB', function(data){			// Up
+		socket.emit('UPPdasdasdasdKT_WEB', data);
+	})
+
+*/
 
 		});
 

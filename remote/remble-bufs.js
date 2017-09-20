@@ -174,12 +174,69 @@ class Ubuf extends BufBase {
 		super(); //BufBase.constructor();
 		this.U_CMD = [];
 		this.U_DAT_Array = [];
+	    this.U_DAT_len = 0;
+	    this.U_DAT_blocks = 0;
 	}
 
 	toPkt()
 	{
 
 	}
+
+	process_U_pkt(upkt)
+	{
+	    var cmd = upkt[1];
+	    var sts = upkt[2];
+	    var len = upkt[4]*256 + upkt[3];
+	    
+	    var crc = 0x0000; //crcCCITT(upkt, 5 + len, 0x0000); // we use a 0x0000 seed
+	    
+	    var crcb0 = ((crc >> 0) & 0xFF);
+	    var crcb1 = ((crc >> 8) & 0xFF);
+
+	    var pktb0 = upkt[5+len+1];
+	    var pktb1 = upkt[5+len+0];
+	    
+	    switch( cmd )
+	    {
+	        default:
+	            console.log('cmd = ' + cmd);
+	            console.log('sts = ' + sts);
+	            console.log('len = ' + len);
+
+	            console.log('cb0 = ' + crcb0);
+	            console.log('pb0 = ' + pktb0);
+	            console.log('cb1 = ' + crcb1);
+	            console.log('pb1 = ' + pktb1);
+	            
+	            break;
+	    }
+	    
+	}
+
+	On_U_CMD(data)
+	{
+	    //printData20( data);
+	    this.U_CMD = data;
+
+	    var len = this.U_CMD[3] * 256 + this.U_CMD[2];
+	    this.U_DAT_len = len;
+
+	    var blocks = 1 + Math.floor((len-1)/16);
+	    this.U_DAT_blocks = blocks;
+	    
+	    var theArray = [];
+	    for(var b = 0; b<blocks; b++)
+	    {
+	        var data20 = new Buffer(20);
+	        theArray.push(data20);
+	    }
+	    
+	    this.U_DAT_Array = theArray;
+	}
+
+
+
 }
 
 

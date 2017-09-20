@@ -91,7 +91,16 @@ TandDUpDnService.prototype.unnotify_U_DAT = function(callback) {
 };
 
 TandDUpDnService.prototype.on_U_DAT = function(data) {
-    this.emit('u_dat_Change', data);
+	
+	//var blk = { data : data, device : this.peripheral}; //undefined
+	//var blk = { data : data, device : this.Peripheral};
+	var blk = { data : data, device : this};
+	//var blk = { data : data, device : Peripheral}; Peripheral not defined
+	//var blk = { data : data, device : this.NobleDevice};
+	//var blk = { data : data, device : NobleDevice};
+
+    this.emit('u_dat_Change', blk);
+    //this.emit('u_dat_Change', data);
 };
 
 
