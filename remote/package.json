@@ -13,9 +13,10 @@
   "author": "Karel Seeuwen",
   "license": "ISC",
   "dependencies": {
-    "socket.io": "*",
+    "async": "^2.5.0",
     "express": "*",
-    "noble-device": "*"
+    "noble-device": "*",
+    "socket.io": "*"
   },
   "bugs": {
     "url": "https://github.com/Stupid-Git/ble_rem/issues"
