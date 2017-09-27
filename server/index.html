@@ -53,7 +53,7 @@
 				<div class="well">
 					<h3>Online Users</h3>
 					<u1 class="list-group" id="users"></u1>
-				
+
 				</div>
 			</div>
 
@@ -76,7 +76,7 @@
 				<div class="well">
 					<h3>Ble List Group</h3>
 					<u1 class="list-group" id="bleusers"></u1>
-				
+
 				</div>
 			</div>
 
@@ -88,10 +88,10 @@
 						<textarea class="form-control" id="blemessage"></textarea>
 
 						<br />
-						<input type="submit" class="btn btn-primary" value="Send bleMessage" 
+						<input type="submit" class="btn btn-primary" value="Send bleMessage"
 						/>
 <!--
-						<br />						
+						<br />
 						<input type="submit" class="btn btn-primary" value="Send bleMessage2" />
 -->
 					</div>
@@ -108,7 +108,7 @@
 	    };
 	</script>
     <div  onclick="alert('div clicked')" >
-        <input 	
+        <input
                	type="button"
 		        onclick="test()"
 
@@ -123,30 +123,172 @@
         id="submit-btn"  value="Please submit" />
 <!-- -->
 
+    <input type="button" class="click" id="click" value="Click" style="width: 45px; height: 20px; text-align: center; color: white; background: #23b7e5; font-size: 13px; border-color: #23b7e5; border-radius:2px; padding: 0px; ">
+    <label class="control-label" style="border: thin red solid;">Here to find location</label>
+
+<!-- -->
+		</br>
+		<input type="button" id="scanStart-btn" class="btn btn-primary" value="Scan Start" />
+		</br>
+		<input type="button" id="scanStop-btn" class="btn btn-primary" value="Scan Stop" />
+		<label>Scan Data:  </label>
+		<label id="scanData-text"></label>
+
+
+		</br>
+    </br>
+		<input type="button" id="connect-btn1"  value="Connect to BLE device 1" />
+		<label id="connect-text1" class="control-label" style="border: thin red solid;"> .... connection status TODO </label>
+		<input type="button" id="connect-btn2"  value="Connect to BLE device 2" />
+		<label id="connect-text2" class="control-label" style="border: thin red solid;"> .... connection status TODO </label>
+		<!-- <p id="Xconnect-text">[...]</p> -->
+<!-- -->
+		</br>
+		</br>
+		<input type="button" id="send_pkt1-btn1"  value="Send 0x01 packet" />
+		<label id="send_pkt1-text1">[...]</label>
+		<input type="button" id="send_pkt1-btn2"  value="Send 0x01 packet" />
+		<label id="send_pkt1-text2">[...]</label>
 <!-- -->
     </br>
-    <input type="button"
-        id="connect-btn"  value="Connect to BLE device" />
-    <p id="connect-text">[...]</p>
-<!-- -->
-    </br>
-    <input type="button"
-        id="send_pkt1-btn"  value="Send 0x01 packet" />
-    <p id="send_pkt1-text">[...]</p>
-<!-- -->
-    </br>
-    <p id="rxBlePkt-text">[...]</p>
+		<label>Rx Packet Info:  </label>
+		<label id="rxBlePkt-text1"></label>
+		<label>Rx Packet Info:  </label>
+		<label id="rxBlePkt-text2"></label>
+
 
 
 	<script>
 		$(function(){
 			var socket = io.connect();
 
+			const bleId_1 = 'ec7c1580b564';
+		//const bleId_2 = 'c64d492d9540';
+			const bleId_2 = 'fb61f44cbd96';
+
 
 			var el_submitBtn = document.getElementById("submit-btn");
 			el_submitBtn.onclick = function() {
 				alert('el_submitBtn clicked');
 			};
+
+			/**/
+			//====================================================================
+			// SCAN BLUETOOTH LE
+			//====================================================================
+			//var Buffer = require('buffer');
+			//console.log(Buffer);
+
+			readInt8 = function(A, pos)
+			{
+				var b0 = A[pos];
+				return(b0);
+			}
+			readUInt16LE = function(A, pos){
+				var  I16 = 0;
+				I16 = A[pos+1] * 256 + A[pos+0];
+				return(I16);
+			}
+			readUInt32LE = function(A, pos){
+				var  I32 = 0;
+				I32 = I32 + A[pos+3];
+				I32 = I32 * 256;
+				I32 = I32 + A[pos+2];
+				I32 = I32 * 256;
+				I32 = I32 + A[pos+1];
+				I32 = I32 * 256;
+				I32 = I32 + A[pos+0];
+				return(I32);
+			}
+			extractFomMd = function(md)
+			{
+				var newMsg = {};
+				newMsg.payload = 'Oh no!';
+
+				if(md[0] === 0x92)
+		    {
+		        //newMsg.payload = msg.payload.manufacturerData;
+
+		        var I16 = readUInt16LE(md, 0);
+		        var I32 = readUInt32LE(md, 2);
+		        var tdId = I16.toString(16);
+		        var tdSerial = I32.toString(16);
+		        //var tdId = md.slice(0, 2).toString('hex');
+		        //var tdSerial = md.slice(2, 6).toString('hex');
+		        var tdSec = readInt8(md, 6);
+		        var pos = 7;
+		        var td1_F = readInt8(md, pos + 0);
+		        var td1_D0 = readUInt16LE(md, pos + 1);
+		        var td1_D1 = readUInt16LE(md, pos + 3);
+
+		        //newMsg.tdFixedString = "Fixed String";
+		        newMsg.tdId = tdId;
+		        newMsg.tdSerial = tdSerial;
+
+		        newMsg.td1_F = td1_F;
+		        if(td1_D0===61166)
+		        {
+		            newMsg.td1_D0 = "Error";
+		        } else {
+		            newMsg.td1_D0 = ((td1_D0 - 1000)/10.0).toString();
+		        }
+		        //newMsg.payload = newMsg.td1_D0;
+
+		        newMsg.payload = 'Name_TBD';
+		        //if (msg.payload.localName) {
+		        //    newMsg.payload = msg.payload.localName;
+		        //}
+		        newMsg.payload += ':  ' + newMsg.td1_D0;
+		        return newMsg;
+		    } else {
+					return newMsg;
+				}
+			}
+
+			var SCANSTART_WEB        = 'scanStart:web';         // Down
+			var SCANSTOP_WEB         = 'scanStop:web';          // Down
+			var SCANDATA_WEB         = 'scanData:web';          // Up
+			var SCANSTARTED_WEB      = 'scanStarted:web';       // Up
+			var SCANSTOPPED_WEB      = 'scanStopped:web';       // Up
+
+			var SCANSTART_REM        = 'scanStart:rem';         // Down
+			var SCANSTOP_REM         = 'scanStop:rem';          // Down
+			var SCANDATA_REM         = 'scanData:rem';          // Up
+			var SCANSTARTED_REM      = 'scanStarted:rem';       // Up
+			var SCANSTOPPED_REM      = 'scanStopped:rem';       // Up
+
+			// message passing ----------------------------------------------------
+			socket.on(SCANSTOPPED_REM, function(data){	// Up
+
+			})
+			socket.on(SCANSTARTED_REM, function(data){	// Up
+
+			});
+
+			socket.on(SCANDATA_WEB, function(data){		// Up
+				var vdata = JSON.parse(data);
+				var md = vdata.manufacturerData.data;
+				//const md = Buffer.from(mdA);
+				//var md = [146,3,103,1,46,88,1,1,237,4,238,238,5,2,1,0,0,0,0,0,0,0,0,0,0,0];
+				//document.getElementById('scanData-text').innerText = vdata.id + ' ' + md[0].toString(16)+ ' ' + md[1].toString(16);
+
+				var newMsg = extractFomMd(md);
+				console.log('newMsg = ' + newMsg );
+				document.getElementById('scanData-text').innerText = vdata.id + ' ' + newMsg.payload;
+			});
+
+			var el_scanStartBtn = document.getElementById("scanStart-btn");
+			el_scanStartBtn.onclick = function() {
+				var data = 'blah';
+				socket.emit(SCANSTART_WEB, data);
+	    };
+			var el_scanStopBtn = document.getElementById("scanStop-btn");
+			el_scanStopBtn.onclick = function() {
+				var data = 'blah';
+				socket.emit(SCANSTOP_WEB, data);
+	    };
+			/**/
+
 
 			//====================================================================
 			// CONNECT BLUETOOTH LE
@@ -155,30 +297,71 @@
 			var DISCONNECT_WEB       = 'disconnect:web';        // Down
 			var CONNECTIONSTATUS_WEB = 'connectionStatus:web';  // Up
 
-			var bleConnectionStatus = false;
+			var bleConnectionStatus1 = false;
+			var bleConnectionStatus2 = false;
 			//id="connect-btn"  value="Connect to BLE device" />
-			var el_connectBtn = document.getElementById("connect-btn");
-			el_connectBtn.onclick = function() {
-				if(bleConnectionStatus === true) {
-					document.getElementById("connect-text").innerHTML = "Disconnecting From BLE ....";
+
+			var el_connectBtn1 = document.getElementById("connect-btn1");
+			el_connectBtn1.onclick = function() {
+				if(bleConnectionStatus1 === true) {
+					document.getElementById("connect-text1").innerHTML = "Disconnecting From BLE ....";
 					//var data = { id : 'ec7c1580b564'};
-					var data = 'ec7c1580b564';
+					var data = bleId_1; //'ec7c1580b564';
 					socket.emit(DISCONNECT_WEB, data);
 				} else {
-					document.getElementById("connect-text").innerHTML = "Connecting To BLE ....";
+					document.getElementById("connect-text1").innerHTML = "Connecting To BLE ....";
 					//var data = { id : 'ec7c1580b564'};
-					var data = 'ec7c1580b564';
+					var data = bleId_1; //'ec7c1580b564';
 					socket.emit(CONNECT_WEB, data);
 				}
 			};
+
+			var el_connectBtn2 = document.getElementById("connect-btn2");
+			el_connectBtn2.onclick = function() {
+				if(bleConnectionStatus2 === true) {
+					document.getElementById("connect-text2").innerHTML = "Disconnecting From BLE 2 ....";
+					//var data = { id : 'ec7c1580b564'};
+					var data = bleId_2; //'ec7c1580b564';
+					socket.emit(DISCONNECT_WEB, data);
+				} else {
+					document.getElementById("connect-text2").innerHTML = "Connecting To BLE 2 ....";
+					//var data = { id : 'ec7c1580b564'};
+					var data = bleId_2; //'ec7c1580b564';
+					socket.emit(CONNECT_WEB, data);
+				}
+			};
+
 			socket.on(CONNECTIONSTATUS_WEB, function(idAndStatus){	// Up
 				var status = idAndStatus.status;
-				bleConnectionStatus = status;
-				if(bleConnectionStatus === true) {
-					document.getElementById("connect-text").innerHTML = "Connected !";
-				} else {
-					document.getElementById("connect-text").innerHTML = "Disconnected !";
-				}
+				var id = idAndStatus.id;
+				if( id === bleId_1)
+				{
+					bleConnectionStatus1 = status;
+					if(bleConnectionStatus1 === true) {
+						document.getElementById("connect-text1").innerHTML = "Connected !";
+						//NG document.getElementById("connect-btn1").innerHTML = "Disconnect from BLE device";
+						el_connectBtn1.value = "Disconnect from BLE device 1";
+					} else {
+						document.getElementById("connect-text1").innerHTML = "Disconnected !";
+						//NG document.getElementById("connect-btn1").innerHTML = "Connect to BLE device";
+						el_connectBtn1.value = "Connect to BLE device 1";
+					}
+  			}
+
+				if(id === bleId_2)
+				{
+					bleConnectionStatus2 = status;
+					if(bleConnectionStatus2 === true) {
+						document.getElementById("connect-text2").innerHTML = "Connected !";
+						//NG document.getElementById("connect-btn1").innerHTML = "Disconnect from BLE device";
+						el_connectBtn2.value = "Disconnect from BLE device 2";
+					} else {
+						document.getElementById("connect-text2").innerHTML = "Disconnected !";
+						//NG document.getElementById("connect-btn1").innerHTML = "Connect to BLE device";
+						el_connectBtn2.value = "Connect to BLE device 2";
+					}
+  			}
+
 			})
 
 
@@ -190,28 +373,52 @@
 			var UPPKT_WEB            = 'upPkt:web';             // Up
 
 			// id="send_pkt1-btn"  value="Send 0x01 packet" />
-			var el_send_pkt1Btn = document.getElementById("send_pkt1-btn");
-			el_send_pkt1Btn.onclick = function() {
+			var el_send_pkt1Btn1 = document.getElementById("send_pkt1-btn1");
+			el_send_pkt1Btn1.onclick = function() {
 			    var _pkt = [0x01, 0x9e,0x00, 0x00,0x00 ,0xce,0x94];
-			    var idAndPkt = { id : 'ec7c1580b564', pkt : _pkt };
-				socket.emit(DNPKT_WEB, idAndPkt);
-				document.getElementById("send_pkt1-text").innerHTML = "Sending ...";
+					//var idAndPkt = { id : 'ec7c1580b564', pkt : _pkt };
+					var idAndPkt = { id : bleId_1, pkt : _pkt };
+					socket.emit(DNPKT_WEB, idAndPkt);
+				  document.getElementById("send_pkt1-text1").innerHTML = "Sending ...";
+				  document.getElementById('rxBlePkt-text1').innerText = "";
 			};
-			socket.on(DNPKTSENTCFM_WEB, function(data) {
-			    document.getElementById('rxBlePkt-text').innerText = 'DNPKTSENTCFM_WEB';
+
+			var el_send_pkt1Btn2 = document.getElementById("send_pkt1-btn2");
+			el_send_pkt1Btn2.onclick = function() {
+			    var _pkt = [0x01, 0x9e,0x00, 0x00,0x00 ,0xce,0x94];
+					//var idAndPkt = { id : 'ec7c1580b564', pkt : _pkt };
+					var idAndPkt = { id : bleId_2, pkt : _pkt };
+					socket.emit(DNPKT_WEB, idAndPkt);
+				  document.getElementById("send_pkt1-text2").innerHTML = "Sending ...";
+				  document.getElementById('rxBlePkt-text2').innerText = "";
+			};
+
+
+			socket.on(DNPKTSENTCFM_WEB, function(data_is_id) {
+				var id = data_is_id;
+				if(id===bleId_1) {
+					document.getElementById("send_pkt1-text1").innerHTML = "Sent to " + data_is_id;
+		    	document.getElementById('rxBlePkt-text1').innerText = 'DNPKTSENTCFM_WEB';
+			  }
+				if(id===bleId_2) {
+					document.getElementById("send_pkt1-text2").innerHTML = "Sent to " + data_is_id;
+		    	document.getElementById('rxBlePkt-text2').innerText = 'DNPKTSENTCFM_WEB';
+			  }
+
 			});
 			socket.on(UPPKT_WEB, function(idAndPkt) {
 				var id = idAndPkt.id;
 				var pkt = idAndPkt.pkt;
 				console.log('pkt.length = ' + pkt.length);
 				console.log('pkt[0] = ' + pkt[0].toString(16) );
+				if(id===bleId_1) {
+			    document.getElementById('rxBlePkt-text1').innerText = id + ': ' + pkt[0].toString(16) + ' ' + pkt[1].toString(16);
+				}
+				if(id===bleId_2) {
+			    document.getElementById('rxBlePkt-text2').innerText = id + ': ' + pkt[0].toString(16) + ' ' + pkt[1].toString(16);
+				}
 
-			    document.getElementById('rxBlePkt-text').innerText = id + ': ' + pkt[0].toString(16) + ' ' + pkt[1].toString(16);
 			});
-
-
-
-
 
 
 
@@ -229,7 +436,7 @@
 						$messageArea.show();
 						$bleArea.show();
 					}
-				}); 
+				});
 				$username.val('');
 			});
 
@@ -292,41 +499,6 @@
 
 			});
 
-/*
-
-var STARTSCAN_WEB        = 'startScan:web';         // Down
-var STOPSCAN_WEB         = 'stopScan:web';          // Down
-var SCANDATA_WEB         = 'scanData:web';          // Up
-var SCANSTOPPED_WEB      = 'scanStoppped:web';      // Up
-
-
-	// message passing ----------------------------------------------------
-	socket.on('XXXSTARTSCAN_WEB', function(data){		// Down
-		socket.emit('STARTSCAN_WEB', data);
-	})
-	socket.on('XXXSTOPSCAN_WEB', function(data){		// Down
-		socket.emit('STOPSCAN_WEB', data);
-	})
-	socket.on('SCANDATA_WEB', function(data){		// Up
-		socket.emit('XXXSCANDATA_WEB', data);
-	})
-	socket.on('SCANSTOPPED_WEB', function(data){	// Up
-		socket.emit('XXXSCANSTOPPED_WEB', data);
-	})
-
-
-
-	socket.on('dsadasdasdNPKT_WEB', function(data){			// Down
-		socket.emit('DNPKT_WEB', data);
-	})
-	socket.on('DNPKTSENTCFM_WEB', function(data){	// Up
-		socket.emit('dfgdfgdfNPKTSENTCFM_WEB', data);
-	})
-	socket.on('UPPKT_WEB', function(data){			// Up
-		socket.emit('UPPdasdasdasdKT_WEB', data);
-	})
-
-*/
 
 		});
 
@@ -339,4 +511,3 @@ var SCANSTOPPED_WEB      = 'scanStoppped:web';      // Up
 
 <!--
 -->
-
