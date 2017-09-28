@@ -250,18 +250,18 @@
 			var SCANDATA_WEB         = 'scanData:web';          // Up
 			var SCANSTARTED_WEB      = 'scanStarted:web';       // Up
 			var SCANSTOPPED_WEB      = 'scanStopped:web';       // Up
-
+      /*
 			var SCANSTART_REM        = 'scanStart:rem';         // Down
 			var SCANSTOP_REM         = 'scanStop:rem';          // Down
 			var SCANDATA_REM         = 'scanData:rem';          // Up
 			var SCANSTARTED_REM      = 'scanStarted:rem';       // Up
 			var SCANSTOPPED_REM      = 'scanStopped:rem';       // Up
-
+      */
 			// message passing ----------------------------------------------------
-			socket.on(SCANSTOPPED_REM, function(data){	// Up
+			socket.on(SCANSTOPPED_WEB, function(data){	// Up
 
-			})
-			socket.on(SCANSTARTED_REM, function(data){	// Up
+			});
+			socket.on(SCANSTARTED_WEB, function(data){	// Up
 
 			});
 

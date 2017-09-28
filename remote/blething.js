@@ -6,7 +6,7 @@ remble.consoleHello('world');
 
 
 // MODIFY THIS WITH THE APPROPRIATE URL
-var socket = require('socket.io-client')('http://localhost:8080');
+var socket = require('socket.io-client')('http://localhost:8088');
 
 
 process.on("SIGINT", function(){
